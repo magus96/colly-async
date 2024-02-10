@@ -11,8 +11,13 @@ import (
 	"github.com/gocolly/colly"
 )
 
+type Quote struct {
+	Author string `json:"author"`
+	Data   string `json:"quote"`
+}
+
 var qMutex sync.RWMutex
-var quotes []string
+var quotes []Quote
 var wg sync.WaitGroup
 
 func main() {
@@ -30,7 +35,7 @@ func main() {
 	}
 
 	wg.Wait()
-	qjson, err := json.Marshal(map[string][]string{"quotes": quotes})
+	qjson, err := json.Marshal(map[string][]Quote{"quotes": quotes})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,7 +54,9 @@ func crawlQuotes(wg *sync.WaitGroup, url string) {
 	})
 
 	c.OnHTML(".quote", func(h *colly.HTMLElement) {
-		quote := h.ChildText("span.text")
+		data := h.ChildText("span.text")
+		author := h.ChildText("small.author")
+		quote := Quote{Author: author, Data: data}
 		qMutex.Lock()
 		quotes = append(quotes, quote)
 		qMutex.Unlock()
