@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/gocolly/colly"
 )
@@ -15,7 +16,7 @@ var quotes []string
 var wg sync.WaitGroup
 
 func main() {
-
+	var start = time.Now().Second()
 	var urls = []string{"https://quotes.toscrape.com/", "https://quotes.toscrape.com/page/2", "https://quotes.toscrape.com/page/3", "https://quotes.toscrape.com/4"}
 	wg.Add(len(urls))
 
@@ -25,7 +26,7 @@ func main() {
 	}
 
 	for _, url := range urls {
-		go crawlCensus(&wg, url)
+		go crawlQuotes(&wg, url)
 	}
 
 	wg.Wait()
@@ -34,9 +35,10 @@ func main() {
 		log.Fatal(err)
 	}
 	fo.Write(qjson)
+	fmt.Println(time.Now().Second() - start)
 }
 
-func crawlCensus(wg *sync.WaitGroup, url string) {
+func crawlQuotes(wg *sync.WaitGroup, url string) {
 
 	defer wg.Done()
 
